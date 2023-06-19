@@ -21,7 +21,7 @@ int main(){
         }
         else if(op == 'r'){
             //chamar função para remoção
-            delete(T1, T2, valor);
+            exclui(T1, T2, valor);
         }
         else
             fprintf(stderr, "operação inválida\n");

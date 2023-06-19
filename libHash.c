@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 #define m 11
-
+#define INIT -1
+#define EXCL -2
 
 
 
@@ -11,8 +12,8 @@ void inicializa(int T1[], int T2[]){
     int i;
 
     for(i = 0; i < m; i++){
-        T1[i] = 0;
-        T2[i] = 0;
+        T1[i] = INIT;
+        T2[i] = INIT;
     }
 }
 
@@ -27,44 +28,76 @@ int h2(int k){
     return floor(m * (k * 0.9 - floor(k * 0.9)));
 }
 
+//função de busca
+int busca(int T1[], int T2[], int k){
+    int chave = h1(k);  //aplico o h1(k) para a Tabela 1
+
+    //verifico se o valor está na Tabela 1
+    if(T1[chave] == k){
+        return 1;
+    }
+    
+    //se nao estiver, verifico se está na Tabela 2
+    chave = h2(k);  //aplico o h2(k) para a Tabela 2
+    if(T2[chave] == k){
+        return 2;
+    }
+
+    //se nao estiver em nenhuma das tabelas
+    return 0;
+}
+
 
 //criarei a função de inserção
 void insere(int T1[], int T2[], int k){
 
     int move;   //variavel para guardar o valor que será movido
-    int chave = h1(k);  //aplico o h1(k) para a Tabela 1
+    
+    switch(busca(T1, T2, k)){
+        case 1:
+            fprintf(stderr, "valor já está na tabela 1!\n");
+            return;
+        case 2:
+            fprintf(stderr, "valor já está na tabela 2!\n");
+            return;
+        case 0:{
+            int chave = h1(k);  //aplico o h1(k) para a Tabela 1
+            //verefico se a posição está vazia ou excluida
+            if(T1[chave] == INIT || T1[chave] == EXCL){
+                T1[chave] = k;  //se estiver vazia, insiro o valor
+                return;
+            }
 
-    //verefico se a posição está vazia
-    if(T1[chave] == 0){
-        T1[chave] = k;  //se estiver vazia, insiro o valor
-        return;
+            //se nao estiver fazia, pego o valor q esta em T1 aplico h2(k) e insiro em T2
+            //eai insiro o valor atual em T1
+            move = T1[chave];
+            T2[h2(move)] = move;
+            T1[h1(k)] = k;
+            return;
+        }
+        default:
+            fprintf(stderr, "erro na busca\n");
+            return;
     }
-
-   //se nao estiver fazia, pego o valor q esta em T1 aplico h2(k) e insiro em T2
-   //eai insiro o valor atual em T1
-    move = T1[chave];
-    T2[h2(move)] = move;
-    T1[h1(k)] = k;
-
     return;
 }
 
 
 //função para remover
-void delete(int T1[], int T2[], int k){
+void exclui(int T1[], int T2[], int k){
     
     int chave = h1(k);  //aplico o h1(k) para a Tabela 1
 
     //verifico se o valor está na Tabela 1
     if(T1[chave] == k){
-        T1[chave] = 0;
+        T1[chave] = EXCL;
         return;
     }
     
     //se nao estiver, verifico se está na Tabela 2
     chave = h2(k);  //aplico o h2(k) para a Tabela 2
     if(T2[chave] == k){
-        T2[chave] = 0;
+        T2[chave] = EXCL;
         return;
     }
 
@@ -74,20 +107,77 @@ void delete(int T1[], int T2[], int k){
 }
 
 
-//função para imprimir a tabela
-void imprime(int T1[], int T2[]){
-    
-    
-    //imprimindo a Tabela 2
-    for(int i = 0; i < m; i++){
-        if(T2[i] != 0)
-            printf("%d,T2,%d\n", T2[i], i);
+// Função para imprimir a tabela 1 em ordem crescente
+void imprimeTabela1(int T1[]){
+    int i;
+    int tempT1[m];
+    int countT1 = 0;
+
+    // Copiando os elementos da Tabela 1 para o vetor temporário
+    for (i = 0; i < m; i++) {
+        if (T1[i] != INIT && T1[i] != EXCL) {
+            tempT1[countT1] = T1[i];
+            countT1++;
+        }
     }
 
+    // Ordenando o vetor temporário da Tabela 1 em ordem crescente
+    for (i = 0; i < countT1 - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < countT1; j++) {
+            if (tempT1[j] < tempT1[minIndex]) {
+                minIndex = j;
+            }
+        }
+        // Trocando o elemento mínimo com o primeiro elemento não classificado
+        int tempValue = tempT1[minIndex];
+        tempT1[minIndex] = tempT1[i];
+        tempT1[i] = tempValue;
+    }
 
-    //imprimindo a Tabela 1
-    for(int i = 0; i < m; i++){
-        if(T1[i] != 0)
-            printf("%d,T1,%d\n", T1[i], i);
+    // Imprimindo os elementos da Tabela 1 em ordem crescente
+    for (i = 0; i < countT1; i++) {
+        printf("%d,T1,%d\n", tempT1[i], h1(tempT1[i]));
     }
 }
+
+// Função para imprimir a tabela 2 em ordem crescente
+void imprimeTabela2(int T2[]){
+    int i;
+    int tempT2[m];
+    int countT2 = 0;
+
+    // Copiando os elementos da Tabela 2 para o vetor temporário
+    for (i = 0; i < m; i++) {
+        if (T2[i] != INIT && T2[i] != EXCL) {
+            tempT2[countT2] = T2[i];
+            countT2++;
+        }
+    }
+
+    // Ordenando o vetor temporário da Tabela 2 em ordem crescente
+    for (i = 0; i < countT2 - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < countT2; j++) {
+            if (tempT2[j] < tempT2[minIndex]) {
+                minIndex = j;
+            }
+        }
+        // Trocando o elemento mínimo com o primeiro elemento não classificado
+        int tempValue = tempT2[minIndex];
+        tempT2[minIndex] = tempT2[i];
+        tempT2[i] = tempValue;
+    }
+
+    // Imprimindo os elementos da Tabela 2 em ordem crescente
+    for (i = 0; i < countT2; i++) {
+        printf("%d,T2,%d\n", tempT2[i], h2(tempT2[i]));
+    }
+}
+
+// Função para imprimir a tabela
+void imprime(int T1[], int T2[]){
+    imprimeTabela2(T2);
+    imprimeTabela1(T1);
+}
+
