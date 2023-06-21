@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "libHash.h"
 #define m 11
 #define INIT -1
 #define EXCL -2
